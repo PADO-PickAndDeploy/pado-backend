@@ -1,4 +1,4 @@
-package org.pado.pado_server;
+package org.pado.api;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
