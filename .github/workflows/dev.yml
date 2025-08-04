@@ -56,7 +56,7 @@ jobs:
         ssh -o ProxyCommand="cloudflared access ssh --hostname pado-dev-ssh.taehyeok.org" \
             -o StrictHostKeyChecking=no \
             -i pado_dev_key root@localhost \
-            'pkill -f "java.*api-server" || true'
+            'ps aux | grep api-server.jar | grep -v grep | awk "{print \$2}" | xargs -r kill'
 
     - name: Start server
       run: |
