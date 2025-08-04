@@ -40,14 +40,12 @@ jobs:
 
     - name: Copy .jar to server
       run: |
-        cloudflared access ssh \
-        --hostname ssh.pado.dev \
-        --ssh-url ssh://root@localhost:22 \
-        -- ssh -i pado_dev_key root@localhost \
-        'mkdir -p /opt/pado && exit'
+        ssh -o ProxyCommand="cloudflared access ssh --hostname pado-dev-ssh.taehyeok.org" \
+            -i pado_dev_key root@localhost \
+            'mkdir -p /opt/pado && exit'
 
         scp -i pado_dev_key \
-        -o ProxyCommand="cloudflared access ssh --hostname ssh.pado.dev --ssh-url ssh://root@localhost:22" \
+        -o ProxyCommand="cloudflared access ssh --hostname pado-dev-ssh.taehyeok.org" \
         api-server/build/libs/*.jar \
         root@localhost:/opt/pado/api-server.jar
 
