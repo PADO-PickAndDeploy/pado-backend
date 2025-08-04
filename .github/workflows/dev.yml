@@ -48,13 +48,14 @@ jobs:
         scp -i pado_dev_key \
         -o ProxyCommand="cloudflared access ssh --hostname pado-dev-ssh.taehyeok.org" \
         -o StrictHostKeyChecking=no \
-        api-server/build/libs/*.jar \
+        api-server/build/libs/pado-server-0.0.1-SNAPSHOT.jar \
         root@localhost:/opt/pado/api-server.jar
 
     - name: Restart application remotely
       run: |
-        cloudflared access ssh --hostname ssh.pado.dev \
-          -- ssh -i pado_dev_key root@localhost <<'EOF'
+        ssh -o ProxyCommand="cloudflared access ssh --hostname pado-dev-ssh.taehyeok.org" \
+            -o StrictHostKeyChecking=no \
+            -i pado_dev_key root@localhost <<'EOF'
             pkill -f 'java.*api-server' || true
-            nohup java -jar /opt/pado/pado-server-0.0.1-SNAPSHOT.jar > /opt/pado/api-server.log 2>&1 &
+            nohup java -jar /opt/pado/api-server.jar > /opt/pado/api-server.log 2>&1 &
           EOF
