@@ -1,0 +1,58 @@
+name: Dev CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "dev" ]
+  pull_request:
+    branches: [ "dev" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Source
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+      with:
+        build-root-directory: api-server
+
+    - name: Run Tests and Build (in pado-server)
+      working-directory: pado-server
+      run: ./gradlew test build
+
+    - name: Install cloudflared
+      run: |
+        curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
+        chmod +x cloudflared
+        sudo mv cloudflared /usr/local/bin/
+
+    - name: Write SSH Key
+      run: |
+        echo "${{ secrets.PADO_DEV_SSH_KEY }}" > pado_dev_key
+        chmod 600 pado_dev_key
+
+    - name: Copy .jar to server
+      run: |
+        cloudflared access ssh --hostname ssh.pado.dev \
+          -- ssh -i pado_dev_key root@localhost \
+          'mkdir -p /opt/pado && exit'
+
+        scp -i pado_dev_key -o ProxyCommand="cloudflared access ssh --hostname ssh.pado.dev" \
+          pado-server/build/libs/*.jar root@localhost:/opt/pado/pado-server.jar
+
+    - name: Restart application remotely
+      run: |
+        cloudflared access ssh --hostname ssh.pado.dev \
+          -- ssh -i pado_dev_key root@localhost <<'EOF'
+            pkill -f 'java.*pado-server' || true
+            nohup java -jar /opt/pado/pado-server.jar > /opt/pado/server.log 2>&1 &
+          EOF
