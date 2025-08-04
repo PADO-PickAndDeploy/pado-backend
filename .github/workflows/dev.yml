@@ -40,17 +40,21 @@ jobs:
 
     - name: Copy .jar to server
       run: |
-        cloudflared access ssh --hostname ssh.pado.dev \
-          -- ssh -i pado_dev_key root@localhost \
-          'mkdir -p /opt/pado && exit'
+        cloudflared access ssh \
+        --hostname ssh.pado.dev \
+        --ssh-url ssh://root@localhost:22 \
+        -- ssh -i pado_dev_key root@localhost \
+        'mkdir -p /opt/pado && exit'
 
-        scp -i pado_dev_key -o ProxyCommand="cloudflared access ssh --hostname ssh.pado.dev" \
-          api-server/build/libs/*.jar root@localhost:/opt/pado/api-server.jar
+        scp -i pado_dev_key \
+        -o ProxyCommand="cloudflared access ssh --hostname ssh.pado.dev --ssh-url ssh://root@localhost:22" \
+        api-server/build/libs/*.jar \
+        root@localhost:/opt/pado/api-server.jar
 
     - name: Restart application remotely
       run: |
         cloudflared access ssh --hostname ssh.pado.dev \
           -- ssh -i pado_dev_key root@localhost <<'EOF'
             pkill -f 'java.*api-server' || true
-            nohup java -jar /opt/pado/api-server.jar > /opt/pado/server.log 2>&1 &
+            nohup java -jar /opt/pado/pado-server-0.0.1-SNAPSHOT.jar > /opt/pado/api-server.log 2>&1 &
           EOF
