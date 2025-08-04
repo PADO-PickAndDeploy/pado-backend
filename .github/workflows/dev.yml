@@ -51,11 +51,16 @@ jobs:
         api-server/build/libs/pado-server-0.0.1-SNAPSHOT.jar \
         root@localhost:/opt/pado/api-server.jar
 
-    - name: Restart application remotely
+    - name: Kill running process (if any)
       run: |
-        ssh -o ProxyCommand="cloudflared access ssh --hostname pado-dev-ssh.taehyeok.org" \
-            -o StrictHostKeyChecking=no \
-            -i pado_dev_key root@localhost <<'EOF'
-            pkill -f 'java.*api-server' || true
-            nohup java -jar /opt/pado/api-server.jar > /opt/pado/api-server.log 2>&1 &
-          EOF
+        ssh -o StrictHostKeyChecking=no \
+            -o ProxyCommand="cloudflared access ssh --hostname pado-dev-ssh.taehyeok.org" \
+            -i pado_dev_key root@localhost \
+            'pkill -f "java.*api-server" || true'
+
+    - name: Start server
+      run: |
+        ssh -o StrictHostKeyChecking=no \
+            -o ProxyCommand="cloudflared access ssh --hostname pado-dev-ssh.taehyeok.org" \
+            -i pado_dev_key root@localhost \
+            'nohup java -jar /opt/pado/api-server.jar > /opt/pado/api-server.log 2>&1 &'
