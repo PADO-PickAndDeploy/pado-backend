@@ -22,11 +22,9 @@ jobs:
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
-      with:
-        build-root-directory: api-server
 
-    - name: Run Tests and Build (in pado-server)
-      working-directory: pado-server
+    - name: Run Tests and Build (in api-server)
+      working-directory: api-server
       run: ./gradlew test build
 
     - name: Install cloudflared
@@ -47,12 +45,12 @@ jobs:
           'mkdir -p /opt/pado && exit'
 
         scp -i pado_dev_key -o ProxyCommand="cloudflared access ssh --hostname ssh.pado.dev" \
-          pado-server/build/libs/*.jar root@localhost:/opt/pado/pado-server.jar
+          api-server/build/libs/*.jar root@localhost:/opt/pado/api-server.jar
 
     - name: Restart application remotely
       run: |
         cloudflared access ssh --hostname ssh.pado.dev \
           -- ssh -i pado_dev_key root@localhost <<'EOF'
-            pkill -f 'java.*pado-server' || true
-            nohup java -jar /opt/pado/pado-server.jar > /opt/pado/server.log 2>&1 &
+            pkill -f 'java.*api-server' || true
+            nohup java -jar /opt/pado/api-server.jar > /opt/pado/server.log 2>&1 &
           EOF
