@@ -16,6 +16,14 @@ spring:
     password: ${PADO_PW}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
   data:
     mongodb:
       uri: mongodb://${PADO_ID}:${PADO_PW}@${PADO_MONGO_DEV_URL}:27017/pado
@@ -50,6 +58,14 @@ spring:
     password: ${PADO_PW}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  
   data:
     mongodb:
       uri: mongodb://${PADO_ID}:${PADO_PW}@localhost:27017/pado

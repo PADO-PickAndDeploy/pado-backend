@@ -36,17 +36,17 @@ public class Component extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
+    private Component parent;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Component> children = new ArrayList<>();
 
-    @OneToMany(mappedBy = "from_component", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Connection> from_connections = new ArrayList<>();
+    @OneToMany(mappedBy = "fromComponent", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Connection> fromConnections = new ArrayList<>();
 
-    @OneToMany(mappedBy = "to_component", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Connection> to_connections = new ArrayList<>();
+    @OneToMany(mappedBy = "toComponent", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Connection> toConnections = new ArrayList<>();
 
-    private Component parent;
     private Long version;
     private String name;
     private ComponentType type;

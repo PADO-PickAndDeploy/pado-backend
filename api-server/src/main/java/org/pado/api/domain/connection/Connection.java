@@ -20,11 +20,11 @@ public class Connection extends BaseTimeEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private Component from_component;
+    private Component fromComponent;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private Component to_component;
+    private Component toComponent;
 
-    private Long from_port;
-    private Long to_port;
+    private Long fromPort;
+    private Long toPort;
 }
