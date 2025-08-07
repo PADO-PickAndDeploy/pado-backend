@@ -76,4 +76,4 @@ jobs:
         ssh -o ProxyCommand="cloudflared access ssh --hostname pado-dev-ssh.taehyeok.org" \
             -o StrictHostKeyChecking=no \
             -i pado_dev_key root@localhost \
-            'cd /opt/pado && export `cat .env | xargs` && nohup java -jar api-server.jar --spring.profiles.active=dev > api-server.log 2>&1 &'
+            "bash -c 'cd /opt/pado && nohup java -jar api-server.jar --spring.profiles.active=dev > api-server.log 2>&1 & exit 0'"
