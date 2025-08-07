@@ -25,7 +25,7 @@ jobs:
 
     - name: Run Tests and Build (in api-server)
       working-directory: api-server
-      run: ./gradlew test build
+      run: ./gradlew test build -Dspring.profiles.active=ci
 
     - name: Install cloudflared
       run: |
