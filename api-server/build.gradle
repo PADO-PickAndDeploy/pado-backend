@@ -1,7 +1,16 @@
+buildscript {
+    ext {
+        protobufVersion = '3.25.1'
+        protobufPluginVersion = '0.9.4'
+        grpcVersion = '1.64.0'
+    }
+}
+
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.4'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'com.google.protobuf' version "${protobufPluginVersion}"
 }
 
 group = 'org.pado'
@@ -29,6 +38,18 @@ dependencies {
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
 	implementation "org.springframework.boot:spring-boot-starter-data-mongodb"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	// Spring Boot 3.x compatible gRPC starter (통합)
+    implementation 'net.devh:grpc-spring-boot-starter:3.1.0.RELEASE'
+
+	// gRPC core dependencies
+    implementation "com.google.protobuf:protobuf-java-util:${protobufVersion}"
+    implementation "com.google.protobuf:protobuf-java:${protobufVersion}"
+    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    implementation "io.grpc:grpc-stub:${grpcVersion}"
+
     runtimeOnly "com.mysql:mysql-connector-j"
     implementation "org.springframework.cloud:spring-cloud-starter-vault-config:3.1.2"
 	compileOnly 'org.projectlombok:lombok'
@@ -39,5 +60,52 @@ dependencies {
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
+    jvmArgs += ["-Djdk.attach.allowAttachSelf=true"]
+}
+
+tasks.processResources {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:${protobufVersion}"
+    }
+    plugins {
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+        }
+    }
+    generateProtoTasks {
+        all().each { task ->
+            task.plugins {
+                grpc {}
+            }
+            task.generateDescriptorSet = true
+            task.descriptorSetOptions.includeSourceInfo = true
+            task.descriptorSetOptions.includeImports = true
+        }
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs += [
+        '-Xlint:unchecked',
+        '-Xlint:deprecation',
+        '--add-exports=java.base/sun.nio.ch=ALL-UNNAMED',
+        '--add-opens=java.base/java.lang=ALL-UNNAMED',
+        '-Xlint:-processing'
+    ]
+}
+
+sourceSets {
+    main {
+        proto {
+            srcDir 'src/main/proto'
+        }
+        java {
+            srcDirs 'build/generated/source/proto/main/java', 'build/generated/source/proto/main/grpc'
+        }
+    }
 }
