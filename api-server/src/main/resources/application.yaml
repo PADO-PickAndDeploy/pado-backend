@@ -1,16 +1,73 @@
 spring:
   application:
     name: pado-server
+  profiles:
+    active: local
+    
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
   datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-  h2:
-    console:
-      enabled: true
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
-    database-platform: org.hibernate.dialect.H2Dialect
+    url: jdbc:mysql://${PADO_MYSQL_DEV_URL}:3306/pado
+    username: ${PADO_ID}
+    password: ${PADO_PW}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  data:
+    mongodb:
+      uri: mongodb://${PADO_ID}:${PADO_PW}@${PADO_MONGO_DEV_URL}:27017/pado
+
+  cloud:
+    vault:
+      uri: http://${PADO_VAULT_DEV_URL}:8200
+      token: ${VAULT_DEV_TOKEN}
+      scheme: http
+      authentication: TOKEN
+      connection-timeout: 5000
+      read-timeout: 15000
+      config:
+        lifecycle:
+          enabled: false
+
+      kv:
+        enabled: true
+        backend: secret
+        default-context: application
+        profile-separator: '-'
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/pado
+    username: ${PADO_ID}
+    password: ${PADO_PW}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  data:
+    mongodb:
+      uri: mongodb://${PADO_ID}:${PADO_PW}@localhost:27017/pado
+
+  cloud:
+    vault:
+      uri: http://localhost:8200
+      token: ${VAULT_DEV_TOKEN}
+      scheme: http
+      authentication: TOKEN
+      connection-timeout: 5000
+      read-timeout: 15000
+      config:
+        lifecycle:
+          enabled: false
+
+      kv:
+        enabled: true
+        backend: secret
+        default-context: application
+        profile-separator: '-'
