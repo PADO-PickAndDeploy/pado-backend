@@ -63,4 +63,4 @@ jobs:
         ssh -o ProxyCommand="cloudflared access ssh --hostname pado-dev-ssh.taehyeok.org" \
             -o StrictHostKeyChecking=no \
             -i pado_dev_key root@localhost \
-            'nohup java -jar /opt/pado/api-server.jar > /opt/pado/api-server.log 2>&1 &'
+            'nohup java -jar /opt/pado/api-server.jar --spring.profiles.active=dev > /opt/pado/api-server.log 2>&1 &'
