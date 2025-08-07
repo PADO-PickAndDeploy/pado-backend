@@ -51,6 +51,19 @@ jobs:
         api-server/build/libs/pado-server-0.0.1-SNAPSHOT.jar \
         root@localhost:/opt/pado/api-server.jar
 
+    - name: Upload .env file to server
+      run: |
+        echo "PADO_ID=${{ secrets.PADO_ID }}" > .env
+        echo "PADO_PW=${{ secrets.PADO_PW }}" >> .env
+        echo "PADO_MYSQL_DEV_URL=${{ secrets.PADO_MYSQL_DEV_URL }}" >> .env
+        echo "PADO_VAULT_DEV_URL=${{ secrets.PADO_VAULT_DEV_URL }}" >> .env
+        echo "PADO_MONGO_DEV_URL=${{ secrets.PADO_MONGO_DEV_URL }}" >> .env
+
+        scp -i pado_dev_key \
+          -o ProxyCommand="cloudflared access ssh --hostname pado-dev-ssh.taehyeok.org" \
+          -o StrictHostKeyChecking=no \
+          .env root@localhost:/opt/pado/.env
+
     - name: Kill running process (if any)
       run: |
         ssh -o ProxyCommand="cloudflared access ssh --hostname pado-dev-ssh.taehyeok.org" \
@@ -63,4 +76,4 @@ jobs:
         ssh -o ProxyCommand="cloudflared access ssh --hostname pado-dev-ssh.taehyeok.org" \
             -o StrictHostKeyChecking=no \
             -i pado_dev_key root@localhost \
-            'nohup java -jar /opt/pado/api-server.jar --spring.profiles.active=dev > /opt/pado/api-server.log 2>&1 &'
+            'cd /opt/pado && source .env && nohup java -jar api-server.jar --spring.profiles.active=dev > api-server.log 2>&1 &'
