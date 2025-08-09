@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserLoginRequest {
+public class SigninRequest {
 
     @NotBlank(message = "아이디 입력은 필수입니다.")
     @Schema(description = "아이디", example = "pado123")
