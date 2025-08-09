@@ -2,6 +2,7 @@ package org.pado.api.controller;
 
 import java.util.Map;
 
+import org.pado.api.core.security.userdetails.CustomUserDetails;
 import org.pado.api.dto.request.SigninRequest;
 import org.pado.api.dto.request.SignupRequest;
 import org.pado.api.dto.response.DefaultResponse;
