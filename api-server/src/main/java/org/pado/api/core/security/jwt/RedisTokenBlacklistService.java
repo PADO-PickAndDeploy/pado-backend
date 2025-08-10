@@ -11,7 +11,7 @@ import java.time.Duration;
 import java.util.Date;
 
 @Service
-@ConditionalOnProperty(name = "spring.data.redis.url", matchIfMissing = false)
+@ConditionalOnProperty(name = "spring.data.redis.url")
 @RequiredArgsConstructor
 @Slf4j
 public class RedisTokenBlacklistService implements TokenBlacklistService{
