@@ -143,7 +143,7 @@ public class AuthService {
                     "토큰 검증 중 오류가 발생했습니다.");
             }
             
-            // refresh Token을 블랙리스트에 추가
+            // refresh Token을 블랙리스트에 추가 (Redis/NoOp 구현체가 자동으로 선택됨)
             tokenBlacklistService.blacklistToken(refreshToken);
             
             log.info("로그아웃 완료: 사용자ID={}", userDetails.getId());
