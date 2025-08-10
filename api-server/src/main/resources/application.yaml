@@ -3,7 +3,9 @@ spring:
     name: pado-server
   profiles:
     active: local
-    
+
+jwt:
+  secret: ${JWT_SECRET}
 ---
 spring:
   config:
@@ -52,6 +54,8 @@ spring:
   data:
     mongodb:
       uri: mongodb://${PADO_ID}:${PADO_PW}@${PADO_MONGO_DEV_URL}:27017/pado
+    redis:
+      url: redis://${PADO_ID}:${PADO_PW}@${PADO_REDIS_DEV_URL}:6379/pado
 
   cloud:
     vault:
@@ -99,6 +103,8 @@ spring:
   data:
     mongodb:
       uri: mongodb://${PADO_ID}:${PADO_PW}@localhost:27017/pado
+    redis:
+      url: redis://${PADO_ID}:${PADO_PW}@localhost:6379/pado
 
   cloud:
     vault:
