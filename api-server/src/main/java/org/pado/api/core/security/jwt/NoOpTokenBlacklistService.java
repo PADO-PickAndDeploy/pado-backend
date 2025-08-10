@@ -1,6 +1,6 @@
 package org.pado.api.core.security.jwt;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
  * 실제로는 아무 작업도 수행하지 않음
  */
 @Service
-@ConditionalOnMissingBean(RedisTokenBlacklistService.class)
+@Profile("ci")
 @Slf4j
 public class NoOpTokenBlacklistService implements TokenBlacklistService{
     @Override

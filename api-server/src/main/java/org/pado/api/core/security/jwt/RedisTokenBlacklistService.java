@@ -3,7 +3,7 @@ package org.pado.api.core.security.jwt;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +11,7 @@ import java.time.Duration;
 import java.util.Date;
 
 @Service
-@ConditionalOnProperty(name = "spring.data.redis.url")
+@Profile("!ci")
 @RequiredArgsConstructor
 @Slf4j
 public class RedisTokenBlacklistService implements TokenBlacklistService{
