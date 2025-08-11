@@ -11,7 +11,6 @@ import java.time.Duration;
 import java.util.Date;
 
 @Service
-@Profile({"dev", "local"})
 @RequiredArgsConstructor
 @Slf4j
 public class RedisTokenBlacklistService implements TokenBlacklistService{
