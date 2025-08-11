@@ -56,6 +56,9 @@ jobs:
         echo "PADO_MYSQL_DEV_URL=${{ secrets.PADO_MYSQL_DEV_URL }}" >> .env
         echo "PADO_VAULT_DEV_URL=${{ secrets.PADO_VAULT_DEV_URL }}" >> .env
         echo "PADO_MONGO_DEV_URL=${{ secrets.PADO_MONGO_DEV_URL }}" >> .env
+        echo "PADO_REDIS_DEV_URL=${{ secrets.PADO_REDIS_DEV_URL }}" >> .env
+        echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+    
 
         scp -i pado_dev_key \
           -o ProxyCommand="cloudflared access ssh --hostname pado-dev-ssh.taehyeok.org" \

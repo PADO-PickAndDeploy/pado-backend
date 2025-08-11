@@ -3,7 +3,8 @@ spring:
     name: pado-server
   profiles:
     active: local
-    
+jwt:
+  secret: ${JWT_SECRET}    
 ---
 spring:
   config:
@@ -20,11 +21,19 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: true
+  
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
   cloud:
     vault:
       enabled: false
-
+  
+  app:
+    cors:
+      allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
 ---
 spring:
   config:
@@ -52,7 +61,9 @@ spring:
   data:
     mongodb:
       uri: mongodb://${PADO_ID}:${PADO_PW}@${PADO_MONGO_DEV_URL}:27017/pado
-
+    redis:
+      url: redis://${PADO_ID}:${PADO_PW}@${PADO_REDIS_DEV_URL}:6379/pado
+  
   cloud:
     vault:
       uri: http://${PADO_VAULT_DEV_URL}:8200
@@ -99,7 +110,9 @@ spring:
   data:
     mongodb:
       uri: mongodb://${PADO_ID}:${PADO_PW}@localhost:27017/pado
-
+    redis:
+      url: redis://${PADO_ID}:${PADO_PW}@localhost:6379/pado
+  
   cloud:
     vault:
       uri: http://localhost:8200
