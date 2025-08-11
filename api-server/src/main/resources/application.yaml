@@ -3,20 +3,14 @@ spring:
     name: pado-server
   profiles:
     active: local
-
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET}    
 ---
 spring:
   config:
     activate:
       on-profile: ci
-  
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
-  
+
   datasource:
     url: jdbc:h2:mem:ci_testdb;DB_CLOSE_DELAY=-1
     driver-class-name: org.h2.Driver
@@ -61,7 +55,7 @@ spring:
       uri: mongodb://${PADO_ID}:${PADO_PW}@${PADO_MONGO_DEV_URL}:27017/pado
     redis:
       url: redis://${PADO_ID}:${PADO_PW}@${PADO_REDIS_DEV_URL}:6379/pado
-
+  
   cloud:
     vault:
       uri: http://${PADO_VAULT_DEV_URL}:8200
@@ -110,7 +104,7 @@ spring:
       uri: mongodb://${PADO_ID}:${PADO_PW}@localhost:27017/pado
     redis:
       url: redis://${PADO_ID}:${PADO_PW}@localhost:6379/pado
-
+  
   cloud:
     vault:
       uri: http://localhost:8200
