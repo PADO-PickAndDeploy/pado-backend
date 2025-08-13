@@ -1,9 +1,12 @@
 package org.pado.api.domain.credential;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CredentialRepository extends JpaRepository<Credential, Long> {
-    Credential findByUserId(Long userId);
-    Credential findByName(String name);    
-    Credential findByType(String type);
+    List<Credential> findByUserId(Long userId);
+    List<Credential> findByName(String name);    
+    List<Credential> findByType(String type);
+    boolean existsByName(String name);
 }
