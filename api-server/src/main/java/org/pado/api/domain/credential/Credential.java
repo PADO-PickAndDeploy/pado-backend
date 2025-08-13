@@ -29,4 +29,9 @@ public class Credential extends BaseTimeEntity{
     private String name;
     private String type;
     private String description;
+    public String getCredentialType() {
+        // TODO Auto-generated method stub
+        // throw new UnsupportedOperationException("Unimplemented method 'getCredentialType'");
+        return this.type;
+    }
 }
