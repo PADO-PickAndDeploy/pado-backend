@@ -5,7 +5,6 @@ import org.pado.api.dto.request.CredentialRegisterRequest;
 import org.pado.api.dto.response.CredentialResponse;
 import org.pado.api.dto.response.DefaultResponse;
 import org.pado.api.service.CredentialService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
