@@ -4,7 +4,10 @@ spring:
   profiles:
     active: local
 jwt:
-  secret: ${JWT_SECRET}    
+  secret: ${JWT_SECRET}
+app:
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
 ---
 spring:
   config:
@@ -12,28 +15,42 @@ spring:
       on-profile: ci  
 
   datasource:
-    url: jdbc:h2:mem:ci_testdb;DB_CLOSE_DELAY=-1
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: ${SPRING_DATASOURCE_URL}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
 
   jpa:
     hibernate:
       ddl-auto: create-drop
     show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
   
   data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI}
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+      url: ${SPRING_REDIS_URL}
 
   cloud:
     vault:
-      enabled: false
-  
-  app:
-    cors:
-      allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+      uri: http://localhost:8200
+      token: root
+      scheme: http
+      authentication: TOKEN
+      connection-timeout: 5000
+      read-timeout: 15000
+      config:
+        lifecycle:
+          enabled: false
+
+      kv:
+        enabled: true
+        backend: secret
+        default-context: application
+        profile-separator: '-'
 ---
 spring:
   config:
@@ -62,7 +79,7 @@ spring:
     mongodb:
       uri: mongodb://${PADO_ID}:${PADO_PW}@${PADO_MONGO_DEV_URL}:27017/pado
     redis:
-      url: redis://${PADO_ID}:${PADO_PW}@${PADO_REDIS_DEV_URL}:6379/pado
+      url: redis://${PADO_ID}:${PADO_PW}@${PADO_REDIS_DEV_URL}:6379/0
   
   cloud:
     vault:
@@ -111,7 +128,7 @@ spring:
     mongodb:
       uri: mongodb://${PADO_ID}:${PADO_PW}@localhost:27017/pado
     redis:
-      url: redis://${PADO_ID}:${PADO_PW}@localhost:6379/pado
+      url: redis://${PADO_ID}:${PADO_PW}@localhost:6379/0
   
   cloud:
     vault:
