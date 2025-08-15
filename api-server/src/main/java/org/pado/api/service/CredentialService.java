@@ -11,6 +11,7 @@ import org.pado.api.core.vault.service.CredentialVaultService;
 import org.pado.api.domain.credential.Credential;
 import org.pado.api.domain.credential.CredentialRepository;
 import org.pado.api.dto.request.CredentialRegisterRequest;
+import org.pado.api.dto.response.CredentialDetailResponse;
 import org.pado.api.dto.response.CredentialResponse;
 
 import org.springframework.stereotype.Service;
@@ -86,10 +87,45 @@ public class CredentialService {
                         c.getCreatedAt().format(formatter)))
                 .collect(Collectors.toList());
     }
+
+    @Transactional(readOnly = true)
+    public CredentialDetailResponse getCredential(CustomUserDetails authenticatedUser, Long credentialId){
+        log.info("Getting credential detail: {} for user: {}", credentialId, authenticatedUser.getId());
+
+        // 크리덴셜 존재 여부
+        Credential credential = credentialRepository.findById(credentialId)
+            .orElseThrow(() -> new CustomException(ErrorCode.CREDENTIAL_NOT_FOUND));
+        // 사용자 소유권 확인
+        if (!credential.getUser().getId().equals(authenticatedUser.getUser().getId())) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+        // Vault에서 실제 데이터 조회
+        String credentialData;
+        try {
+            credentialData = credentialVaultService.getCredentialData(authenticatedUser.getUser(), credential);
+            log.debug("Successfully retrieved credential data from Vault for credential: {}", credentialId);
+        } catch (Exception e) {
+            log.error("Failed to retrieve credential data from Vault for credential: {}", credentialId, e);
+            throw new CustomException(ErrorCode.VAULT_OPERATION_FAILED, 
+                "크리덴셜 데이터 조회에 실패했습니다.", e);
+        }
+
+        return new CredentialDetailResponse(
+                credential.getId(),
+                credential.getName(),
+                credential.getType(),
+                credential.getDescription(),
+                credentialData,
+                "크리덴셜 상세 조회 완료",
+                credential.getCreatedAt().format(formatter),
+                credential.getUpdatedAt().format(formatter)
+        );
+    }
     
 
     /**
      * 소유권 검증
+     * 재사용성 : 여러곳에서 소유권 검증이 필요할 때
      */
     private void validateOwnership(Credential credential, Long userId) {
         if (!credential.getUser().getId().equals(userId)) {
