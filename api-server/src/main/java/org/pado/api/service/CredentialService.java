@@ -74,7 +74,8 @@ public class CredentialService {
 
     @Transactional(readOnly = true)
     public List<CredentialResponse> getAllCredentials(CustomUserDetails authenticatedUser) {
-
+        log.info("Retrieving all credentials for user: {}", authenticatedUser.getId());
+        
         return credentialRepository.findByUser(authenticatedUser.getUser()).stream()
                 .map(c -> new CredentialResponse(
                         c.getId(),
