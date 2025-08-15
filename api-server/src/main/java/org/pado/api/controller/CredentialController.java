@@ -1,5 +1,7 @@
 package org.pado.api.controller;
 
+import java.util.List;
+
 import org.pado.api.core.security.userdetails.CustomUserDetails;
 import org.pado.api.dto.request.CredentialRegisterRequest;
 import org.pado.api.dto.response.CredentialResponse;
@@ -7,6 +9,7 @@ import org.pado.api.dto.response.DefaultResponse;
 import org.pado.api.service.CredentialService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -82,6 +85,31 @@ public class CredentialController {
             @RequestBody CredentialRegisterRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
                 return ResponseEntity.ok(credentialService.createCredential(request, userDetails));
+    }
+
+    @Operation(summary = "Credential 관리 (전체 조회)", description = "특정 유저가 등록한 모든 자격 증명을 조회합니다.")
+    @GetMapping
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "크리덴셜 목록 조회 성공",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = CredentialResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "인증 오류 (로그인 필요)",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = DefaultResponse.class)
+            )
+        )
+    })
+    public ResponseEntity<List<CredentialResponse>> getAllCredentials(
+        @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(credentialService.getAllCredentials(userDetails));
     }
     
 }

@@ -1,6 +1,8 @@
 package org.pado.api.service;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.pado.api.core.exception.CustomException;
 import org.pado.api.core.exception.ErrorCode;
@@ -61,6 +63,20 @@ public class CredentialService {
                 "크리덴셜 등록 완료",
                 savedCredential.getCreatedAt().format(formatter)
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<CredentialResponse> getAllCredentials(CustomUserDetails authenticatedUser) {
+
+        return credentialRepository.findByUser(authenticatedUser.getUser()).stream()
+                .map(c -> new CredentialResponse(
+                        c.getId(),
+                        c.getName(),
+                        c.getType(),
+                        c.getDescription(),
+                        "크리덴셜 조회 완료",
+                        c.getCreatedAt().format(formatter)))
+                .collect(Collectors.toList());
     }
     
 
