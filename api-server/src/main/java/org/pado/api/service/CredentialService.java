@@ -8,7 +8,6 @@ import org.pado.api.core.security.userdetails.CustomUserDetails;
 import org.pado.api.core.vault.service.CredentialVaultService;
 import org.pado.api.domain.credential.Credential;
 import org.pado.api.domain.credential.CredentialRepository;
-import org.pado.api.domain.user.UserRepository;
 import org.pado.api.dto.request.CredentialRegisterRequest;
 import org.pado.api.dto.response.CredentialResponse;
 
@@ -25,8 +24,6 @@ public class CredentialService {
     
     private final CredentialRepository credentialRepository;
     private final CredentialVaultService credentialVaultService;
-    // TODO: MVP 이후 외부 API 검증 서비스 추가
-    // private final CredentialValidationService credentialValidationService;
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
     
