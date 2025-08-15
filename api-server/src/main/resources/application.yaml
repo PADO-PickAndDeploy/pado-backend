@@ -52,6 +52,8 @@ spring:
         default-context: application
         profile-separator: '-'
 ---
+server:
+  forward-headers-strategy: framework
 spring:
   config:
     activate:
