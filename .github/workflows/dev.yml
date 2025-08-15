@@ -7,6 +7,67 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    env:
+      # MySQL
+      SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/testdb
+      SPRING_DATASOURCE_USERNAME: test
+      SPRING_DATASOURCE_PASSWORD: test
+      # Redis
+      SPRING_REDIS_URL: redis://test:test@localhost:6379/0
+
+      # MongoDB
+      SPRING_DATA_MONGODB_URI: mongodb://test:test@127.0.0.1:27017/testdb?authSource=admin
+
+      # Vault (dev)
+
+      VAULT_ADDR: http://127.0.0.1:8200
+      VAULT_TOKEN: root
+      
+      JWT_SECRET: test-secret
+    services:
+      mysql:
+        image: mysql:8.0
+        ports: ["3306:3306"]
+        env:
+          MYSQL_ROOT_PASSWORD: test
+          MYSQL_DATABASE: testdb
+          MYSQL_USER: test
+          MYSQL_PASSWORD: test
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD || exit 1"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        # 비번이 필요하면 아래처럼:
+        # options: >-
+        #   --cmd "redis-server --requirepass redispw"
+        options: >-
+          --health-cmd="redis-cli ping || exit 1"
+          --health-interval=10s --health-timeout=3s --health-retries=10
+
+      mongo:
+        image: mongo:7
+        ports: ["27017:27017"]
+        env:
+          MONGO_INITDB_ROOT_USERNAME: test
+          MONGO_INITDB_ROOT_PASSWORD: test
+          MONGO_INITDB_DATABASE: testdb
+        options: >-
+          --health-cmd="mongosh --quiet --eval 'db.runCommand({ ping: 1 })' || exit 1"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+
+      vault:
+        image: hashicorp/vault:1.15
+        ports: ["8200:8200"]
+        env:
+          VAULT_DEV_ROOT_TOKEN_ID: root
+          VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+        options: >-
+          --cap-add=IPC_LOCK
+          --health-cmd="wget -qO- http://127.0.0.1:8200/v1/sys/health || exit 1"
+          --health-interval=10s --health-timeout=5s --health-retries=20
 
     steps:
     - name: Checkout Source
@@ -20,10 +81,30 @@ jobs:
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
+    
+    - name: Wait for services (extra safety)
+      run: |
+        set -e
+        # MySQL
+        for i in {1..30}; do
+          nc -z 127.0.0.1 3306 && echo "MySQL up" && break || sleep 2
+        done
+        # Redis
+        for i in {1..30}; do
+          nc -z 127.0.0.1 6379 && echo "Redis up" && break || sleep 2
+        done
+        # Mongo
+        for i in {1..30}; do
+          nc -z 127.0.0.1 27017 && echo "Mongo up" && break || sleep 2
+        done
+        # Vault
+        for i in {1..30}; do
+          curl -s $VAULT_ADDR/v1/sys/health >/dev/null && echo "Vault up" && break || sleep 2
+        done
 
     - name: Run Tests and Build (in api-server)
       working-directory: api-server
-      run: ./gradlew test build -Dspring.profiles.active=ci
+      run: ./gradlew test build -Dspring.profiles.active=ci --info --stacktrace
 
     - name: Install cloudflared
       run: |
@@ -43,27 +124,12 @@ jobs:
             -i pado_dev_key root@localhost \
             'mkdir -p /opt/pado && exit'
 
-        scp -i pado_dev_key \
-        -o ProxyCommand="cloudflared access ssh --hostname pado-dev-ssh.taehyeok.org" \
-        -o StrictHostKeyChecking=no \
+        rsync -avz \
+        -e "ssh -i pado_dev_key \
+            -o ProxyCommand='cloudflared access ssh --hostname pado-dev-ssh.taehyeok.org' \
+            -o StrictHostKeyChecking=no" \
         api-server/build/libs/pado-server-0.0.1-SNAPSHOT.jar \
         root@localhost:/opt/pado/api-server.jar
-
-    - name: Upload .env file to server
-      run: |
-        echo "PADO_ID=${{ secrets.PADO_ID }}" > .env
-        echo "PADO_PW=${{ secrets.PADO_PW }}" >> .env
-        echo "PADO_MYSQL_DEV_URL=${{ secrets.PADO_MYSQL_DEV_URL }}" >> .env
-        echo "PADO_VAULT_DEV_URL=${{ secrets.PADO_VAULT_DEV_URL }}" >> .env
-        echo "PADO_MONGO_DEV_URL=${{ secrets.PADO_MONGO_DEV_URL }}" >> .env
-        echo "PADO_REDIS_DEV_URL=${{ secrets.PADO_REDIS_DEV_URL }}" >> .env
-        echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
-    
-
-        scp -i pado_dev_key \
-          -o ProxyCommand="cloudflared access ssh --hostname pado-dev-ssh.taehyeok.org" \
-          -o StrictHostKeyChecking=no \
-          .env root@localhost:/opt/pado/.env
 
     - name: Kill running process (if any)
       run: |
@@ -77,4 +143,4 @@ jobs:
         ssh -o ProxyCommand="cloudflared access ssh --hostname pado-dev-ssh.taehyeok.org" \
             -o StrictHostKeyChecking=no \
             -i pado_dev_key root@localhost \
-            "nohup java -jar /opt/pado/api-server.jar --spring.profiles.active=dev > api-server.log 2>&1 &"
+            "nohup java -jar /opt/pado/api-server.jar --spring.profiles.active=dev > /opt/pado/api-server.log 2>&1 &"
