@@ -32,7 +32,14 @@ public class CredentialService {
     
     @Transactional
     public CredentialResponse createCredential(CredentialRegisterRequest request, CustomUserDetails authenticatedUser) {
-            
+        log.info("Creating credential for user: {}, name: {}", authenticatedUser.getId(), request.getName());
+
+        // 중복 이름 검증
+        if (credentialRepository.existsByNameAndUser(request.getName(), authenticatedUser.getUser())) {
+            log.warn("Duplicate credential name detected: {} for user: {}", request.getName(), authenticatedUser.getId());
+            throw new CustomException(ErrorCode.CREDENTIAL_NAME_DUPLICATE);
+        }
+
         // 크리덴셜 엔티티 생성 (vaultKey는 제거 - Vault에서 경로로 관리)
         Credential credential = Credential.builder()
                 .name(request.getName())
