@@ -28,4 +28,5 @@ public class Project extends BaseTimeEntity{
     private User user;
     private String name;
     private String description;
+    private String thumbnail;
 }
